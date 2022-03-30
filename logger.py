@@ -1,6 +1,6 @@
 import os
 import json
-
+import shutil
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
@@ -10,7 +10,10 @@ from utils import plot_tensor_to_numpy
 class Logger(SummaryWriter):
     def __init__(self, logdir):
         if os.path.exists(logdir):
-            raise RuntimeError(f'Logdir `{logdir} already exists. Remove it or specify new one.`')
+            if input(f'Halting training: Logdir `{logdir} already exists. Remove it and continue with training? EXERCISE CAUTION!`').lower() == 'y':
+                shutil.rmtree(logdir, ignore_errors=True)
+            else:
+                raise RuntimeError(f'Logdir `{logdir} already exists. Remove it or specify new one.`')
         os.makedirs(logdir)
         super(Logger, self).__init__(logdir)
         

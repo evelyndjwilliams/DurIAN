@@ -4,3 +4,5 @@ matplotlib
 scipy
 librosa
 nltk
+listener
+tensorboard
