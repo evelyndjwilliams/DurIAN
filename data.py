@@ -1,5 +1,5 @@
 import torch
-
+import os
 from scipy.io.wavfile import read
 
 from text import TextFrontend
@@ -18,6 +18,7 @@ class Dataset(torch.utils.data.Dataset):
     """
     def __init__(self, config, training=True):
         super(Dataset, self).__init__()
+        self.wav_path = config['wav_path']
         self.training = training
         filelist = config['train_filelist'] if self.training else config['valid_filelist']
         with open(filelist, 'r') as f:
@@ -35,6 +36,7 @@ class Dataset(torch.utils.data.Dataset):
                 dynamic_range_compression='nvidia'
             )
             self.sampling_rate = config['sampling_rate']
+        
 
     def _get_mel(self, filename):
         if self._load_mels_from_disk:
@@ -48,7 +50,7 @@ class Dataset(torch.utils.data.Dataset):
     def __getitem__(self, index):
         item_meta = self._metadata[index]
         text, phonemes_start, phonemes_duration, phonemes_code, filename = item_meta.split('|')
-        
+        filename = os.path.join(self.wav_path, filename)
         item = {
             'text': text,
             'phonemes_start': str_to_int_list(phonemes_start),

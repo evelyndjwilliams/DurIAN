@@ -1,4 +1,5 @@
 {
+    "wav_path" : "/home/jovyan/LJSpeech-1.1",
     "n_epoch": 1000,
     "validation_step": 250,
     "checkpoint_save_step": 1000,
@@ -6,7 +7,7 @@
     "train_filelist": "./filelists/train_filelist.txt",
     "valid_filelist": "./filelists/valid_filelist.txt",
     "load_mels_from_disk": false,
-    "logdir": "./default_test",
+    "logdir": "./evelyn_test",
     "batch_size": 16,
     "learning_rate": 1e-3,
     "grad_clip_threshold": 1.0,
