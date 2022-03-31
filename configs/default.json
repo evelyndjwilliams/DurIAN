@@ -1,5 +1,5 @@
 {
-    "wav_path" : "/home/jovyan/LJSpeech-1.1",
+    "wav_path" : "/home/jovyan/LJSpeech-1.1/wavs", 
     "n_epoch": 1000,
     "validation_step": 250,
     "checkpoint_save_step": 1000,
