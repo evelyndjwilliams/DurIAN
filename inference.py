@@ -5,7 +5,11 @@ import torch
 from torchaudio.vocoders import griffin_lim
 from torchaudio.mel import MelTransformer
 from text import TextFrontend
-from model import DurIAN, BaselineDurIAN
+from model import DurIAN, BaselineDurIAN, DurationModel
+import nltk
+from nltk.tokenize import WordPunctTokenizer
+import soundfile as sf
+from pydub import AudioSegment
 
 
 def load_model(TTS_FRONTEND, config, checkpointPath='dur-ian-checkpoint.pt', durationModelIgnore=[], backboneModelIgnore=[]):
@@ -36,11 +40,31 @@ def test():
 
     text_frontend = TextFrontend()
     config['n_symbols'] = len(text_frontend.SYMBOLS)
-
-    model = load_model(DurIAN, config, 'dur-ian-checkpoint.pt')
+    print(config['n_symbols'])
+    
+    model = load_model(DurIAN, config, 'evelyn_test/checkpoint_26000.pt')
     model.eval()
-    inputs = [16, 5, 34, 2, 32, 5, 30, 6, 50, 25, 27, 53, 15, 26, 23, 18, 31, 43, 5, 34, 55, 55, 25, 27, 53, 18, 41, 5, 24, 5,
-              34, 42, 5, 34, 15, 25, 17, 42, 44, 27, 32, 5, 44, 28, 44, 26, 16, 28, 52, 48, 34, 12, 44, 26, 15, 42, 44, 22, 44, 42, 55]
+    # dur_model = load_model(DurationModel, config, 'evelyn_test/checkpoint_26000.pt'
+    # inputs = dur_model.inference()
+    # 'we are in'
+    # inputs = [16, 5, 34, 2, 32, 5, 30, 6, 50, 25, 27, 53, 15, 26, 23, 18, 31, 43, 5, 34, 55, 55, 25, 27, 53, 18, 41, 5, 24, 5,
+            #   34, 42, 5, 34, 15, 25, 17, 42, 44, 27, 32, 5, 44, 28, 44, 26, 16, 28, 52, 48, 34, 12, 44, 26, 15, 42, 44, 22, 44, 42, 55]
+    
+    # back_to_phonemes = text_frontend.backward(inputs)
+    # print(back_to_phonemes)
+
+    nltk.download('cmudict')
+    arpabet = nltk.corpus.cmudict.dict()
+
+    with open('utts_to_infer.txt', 'r') as o:
+        utt_text = o.read().splitlines()[0]
+    print(utt_text)
+    # token_seq =  WordPunctTokenizer().tokenize(utt_text)
+    # print(token_seq)
+    # arpabet_seq = ' '.join([arpabet[word.lower()] for word in token_seq])
+    arpabet_seq = text_frontend.text_to_phonemes(utt_text)
+    print(arpabet_seq)
+    inputs = text_frontend.forward(arpabet_seq)
     inputs = torch.LongTensor([inputs])
 
     with torch.no_grad():
@@ -49,4 +73,19 @@ def test():
     postnet_outputs = outputs['postnet_outputs']
 
     audio = inference(postnet_outputs, config)
+    print('success')
     return audio
+
+if __name__ == '__main__':
+    audio = test()
+    print(audio)
+
+    sr = 22050
+    # audio.export('evelyn_test_1.wav', format='wav')
+    # 
+
+    audio = test()[0].cpu().numpy()
+    print(audio)
+    #config_file = json.load('configs/default.json')
+    sf.write('/home/jovyan/DurIAN/demo/demo_evelyn1.wav', audio, sr)
+    # save audio as 22.050khz
